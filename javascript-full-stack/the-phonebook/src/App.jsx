@@ -1,43 +1,97 @@
 import { useState } from "react";
 
-const Numbers = ({ persons }) => {
+const Person = ({ person }) => {
+  return (
+    <li>
+      {person.name} {person.number}
+    </li>
+  );
+};
+
+const Persons = ({ persons }) => {
   return (
     <ul>
       {persons.map((person) => (
-        <li key={person.name}>{person.name}</li>
+        <Person key={person.name} person={person} />
       ))}
     </ul>
   );
 };
 
+const PersonForm = ({
+  onSubmit,
+  newName,
+  handleNameChange,
+  newNumber,
+  handleNumberChange,
+}) => {
+  return (
+    <form onSubmit={onSubmit}>
+      <div>
+        name: <input value={newName} onChange={handleNameChange} />
+      </div>
+      <div>
+        number: <input value={newNumber} onChange={handleNumberChange} />
+      </div>
+      <div>
+        <button type="submit">add</button>
+      </div>
+    </form>
+  );
+};
+
 const App = () => {
-  const [persons, setPersons] = useState([{ name: "Arto Hellas" }]);
+  const [persons, setPersons] = useState([
+    { name: "Arto Hellas", number: "040-123456" },
+  ]);
   const [newName, setNewName] = useState("");
+  const [newNumber, setNewNumber] = useState("");
 
-  const addName = (event) => {
+  const addPerson = (event) => {
     event.preventDefault();
-    setPersons(persons.concat({ name: newName }));
+
+    const trimmedName = newName.trim();
+    const trimmedNumber = newNumber.trim();
+
+    if (!trimmedName || !trimmedNumber) {
+      alert("Both name and number are required");
+      return;
+    }
+
+    const isDuplicate = persons.some(
+      (person) => person.name.toLowerCase() === trimmedName.toLowerCase(),
+    );
+
+    if (isDuplicate) {
+      alert(`${trimmedName} is already added to phonebook`);
+      return;
+    }
+
+    const personObject = {
+      name: trimmedName,
+      number: trimmedNumber,
+    };
+
+    setPersons(persons.concat(personObject));
     setNewName("");
+    setNewNumber("");
   };
 
-  const handleNameChange = (event) => {
-    console.log("Name change event:", event.target.value);
-    setNewName(event.target.value);
-  };
+  const handleNameChange = (event) => setNewName(event.target.value);
+  const handleNumberChange = (event) => setNewNumber(event.target.value);
 
   return (
     <div>
       <h2>Phonebook</h2>
-      <form onSubmit={addName}>
-        <div>
-          name: <input onChange={handleNameChange} value={newName} />
-        </div>
-        <div>
-          <button type="submit">add</button>
-        </div>
-      </form>
+      <PersonForm
+        onSubmit={addPerson}
+        newName={newName}
+        handleNameChange={handleNameChange}
+        newNumber={newNumber}
+        handleNumberChange={handleNumberChange}
+      />
       <h2>Numbers</h2>
-      <Numbers persons={persons}></Numbers>
+      <Persons persons={persons} />
     </div>
   );
 };
